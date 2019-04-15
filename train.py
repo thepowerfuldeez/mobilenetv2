@@ -18,21 +18,15 @@ if __name__ == "__main__":
     parser.add_argument("--config", help="Path to yaml config", default="config.yml")
     args = parser.parse_args()
     config = yaml.load(open(args.config))
-
-    # computing current dataset statistics on 100 randomly chosen samples
-    train_ds = CIFAR10("~/workspace/data/cifar10", train=True, download=True)
-    rand_indices = np.random.randint(len(train_ds), size=100)
-    ds_mean = np.mean(np.concatenate([np.array(train_ds[i][0]) for i in rand_indices]), 1).mean(0)
-    ds_std = np.std(np.concatenate([np.array(train_ds[i][0]) for i in rand_indices]), 1).mean(0)
-
-    # making torch datasets using as transform normalization from previous step
+    
+    # making torch datasets using as transform normalization
     train_loader = t.utils.data.DataLoader(
         CIFAR10("~/workspace/data/cifar10", train=True, 
-                transform=T.Compose([T.ToTensor(), T.Normalize(ds_mean, ds_std)])), 
+                transform=T.Compose([T.ToTensor(), T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])), 
         batch_size=config['batch_size'], shuffle=True)
     valid_loader = t.utils.data.DataLoader(
         CIFAR10("~/workspace/data/cifar10", train=False, 
-                transform=T.Compose([T.ToTensor(), T.Normalize(ds_mean, ds_std)])), 
+                transform=T.Compose([T.ToTensor(), T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])), 
         batch_size=config['batch_size'])
 
     # defining model
