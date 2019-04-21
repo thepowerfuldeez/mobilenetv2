@@ -21,11 +21,11 @@ class DepthWiseSepConv(nn.Module):
     def forward(self, x):
         filters = self.depthwise_conv(x)
         filters = self.bn1(filters)
-        filters = F.relu(filters)
+        filters = F.selu(filters)
         # linear combination of produced 3x3 filters
         features = self.pointwise_conv(filters)
         features = self.bn2(features)
-        features = F.relu(features)
+        features = F.selu(features)
         return features
 
 
@@ -33,14 +33,15 @@ class MobileNet(nn.Module):
     """
     MobileNet implementation
     """
-    def __init__(self, width_mult=1, res_mult=1, n_classes=1000):
+    def __init__(self, width_mult=1, res_mult=1, input_channels=3, n_classes=1000):
         """
         :param width_mult: number of parameter shrinking multiplier
         :param res_mult: image resolution multiplier
         """
+        assert 0.0315 < width_mult <= 1, "Width multiplier must be in interval (0.0315, 1]"
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 32, 3, 2)
-        self.bn1 = nn.BatchNorm2d(32)
+        self.conv1 = nn.Conv2d(input_channels, int(width_mult * 32), 3, 2)
+        self.bn1 = nn.BatchNorm2d(int(width_mult * 32))
         # number_layers, in_channels, out_channels, kernel_size, stride, padding
         params = [
             (1, 32, 64, 3, 1, 1),
@@ -58,9 +59,10 @@ class MobileNet(nn.Module):
         for n, in_c, out_c, k, s, p in params:
             for _ in range(n):
                 layers.append(
-                    DepthWiseSepConv(in_channels=in_c, out_channels=out_c, kernel_size=k, stride=s, padding=p)
+                    DepthWiseSepConv(in_channels=int(width_mult * in_c), out_channels=int(width_mult * out_c), 
+                                     kernel_size=k, stride=s, padding=p)
                 )
-        self.features = nn.Sequential(self.conv1, self.bn1, nn.ReLU(), *layers)
+        self.features = nn.Sequential(self.conv1, self.bn1, nn.SELU(), *layers)
         self.fc = nn.Linear(self.features[-1].pointwise_conv.out_channels, n_classes)
 
     def forward(self, x):
@@ -70,6 +72,6 @@ class MobileNet(nn.Module):
         x = F.avg_pool2d(x, avg_pool_kernel_size)
         # flatten output
         x = x.view(x.size(0), -1)
-        x = F.relu(x)
+        x = F.selu(x)
         x = self.fc(x)
         return x

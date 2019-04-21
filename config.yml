@@ -1,5 +1,5 @@
 batch_size: 64
-lr: 1e-3
-num_epochs: 10
+lr: 2e-3
+num_epochs: 8
 device: cuda:0
-step_log: 100
+step_log: 300
