@@ -20,13 +20,15 @@ an additional layer that computes a linear combination of
 the output of depthwise convolution via 1 × 1 convolution
 is needed in order to generate these new features
 
-Comparable models: ResNet50 (23M params), ResNet18 (11M params), MobilenetV1 (2.2M, 1.8M, 0.8M, 0.2M, 0.05M params)
+Comparable models: ResNet18 (11M params), MobilenetV1 (2.2M, 1.8M, 0.8M, 0.2M, 0.05M params)
 Validation accuracy of different models on different datasets
 | 				    | Fashion MNIST   | CIFAR10     | CIFAR100   |
 | ----------------- | :--------------:| :----------:| :--------: |
-| ResNet18      	|		          |	  79.36%	    |   
-| MobileNet(w=1)    |                 |   73.03%    |
-| MobileNet(w=0.75) |                 |   69.26%    |
-| MobileNet(w=0.5) 	|                 |   67.54%    |
-| MobileNet(w=0.25) |                 |   62.69%    |
-| MobileNet(w=0.032)|                 |   39.82%    |
+| ResNet18      	|		          |	  79.36%	    |   47.37%	 |
+| MobileNet(w=1)    |                 |   73.03%    |	26.68%	 |
+| MobileNet(w=0.75) |                 |   69.26%    |	27.82%	 |
+| MobileNet(w=0.5) 	|                 |   67.54%    |	26.28%	 |
+| MobileNet(w=0.25) |                 |   62.69%    |	25.07%	 |
+| MobileNet(w=0.032)|                 |   39.82%    |	13.17%	 |
+
+The harder the dataset, the more parameters model needs to show better perfomance

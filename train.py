@@ -10,6 +10,7 @@ import torchvision.models as tvm
 from torchvision.datasets import CIFAR10, CIFAR100, FashionMNIST
 
 from mobilenet import MobileNet
+from mobilenetv2 import MobileNetV2
 
 def SGDR(optimizer, cycle_len=3, cycle_mult=1.2):
     """
@@ -104,7 +105,7 @@ def train(config, model, train_loader, valid_loader, criterion, opt, sched):
         sched.step()
     return tr_loss, tr_accuracy, valid_loss, valid_accuracy
 
-def run_training(config, n_classes, train_loader, valid_loader, width=1):
+def run_training(config, n_classes, train_loader, valid_loader, width=1, mb_version=1):
     """
     Whole training procedure with fine-tune after regular training
     """
@@ -112,7 +113,10 @@ def run_training(config, n_classes, train_loader, valid_loader, width=1):
     if width > 1:
         model = tvm.resnet18(num_classes=n_classes)
     else:
-        model = MobileNet(n_classes=n_classes, width_mult=width)
+        if mb_version == 1:
+            model = MobileNet(n_classes=n_classes, width_mult=width)
+        else:
+            model = MobileNetV2(n_classes=n_classes, width_mult=width)
     model = model.to(config['device'])
 
     # print out number of parameters
@@ -146,6 +150,8 @@ if __name__ == "__main__":
     for ds_name in ['cifar10', 'cifar100']:
         train_loader, valid_loader = get_loaders(ds_name)
         ds_stats = {}
+        for width in [1, 0.75, 0.5, 0.25, 0.032]:
+            ds_stats[f"mobilenetv2_{width}"] = run_training(config, len(train_loader.dataset.classes), train_loader, valid_loader, width, 2)
         for width in [1.1, 1, 0.75, 0.5, 0.25, 0.032]:
             if width > 1:
                 name = "resnet18"
